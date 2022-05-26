@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Volleyball</title>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @media screen and (max-width: 1000px) {
+            body {
+                transform: scale(2);
+                transform-origin: 0 0;
+            }
+        }
+        
+        body {
+            font-size: 16px;
+        }
+        
+        p {
+            display: inline;
+        }
+        
+        .chart {
+            width: max(28vw, 21vh);
+        }
+        
+        .region {
+            margin-left: max(4vw, 3vh);
+            width: max(20vw, 15vh);
+            height: max(28vw, 21vh);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            text-align: center;
+            font-size: 32px;
+            cursor: default;
+        }
+        
+        .position {
+            margin-left: max(4vw, 3vh);
+            width: max(28vw, 21vh);
+            height: max(6vw, 4.5vh);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            text-align: center;
+            font-size: 32px;
+            cursor: default;
+        }
+        
+        .net {
+            width: max(20vw, 15vh);
+            border: 3px inset gray;
+        }
+        
+        .region table {
+            width: max(20vw, 15vh);
+            height: max(20vw, 15vh);
+            border-collapse: collapse;
+        }
+        
+        .position table {
+            width: max(28vw, 21vh);
+            height: max(4vw, 3vh);
+            border-collapse: collapse;
+        }
+        
+        td {
+            border: 3px inset gray;
+        }
+        
+        td:hover {
+            border: 3px solid red;
+        }
+        
+        .position0:hover {
+            border: 3px inset gray;
+        }
+    </style>
+</head>
+
+<body>
+    <br>
+    <div id="game_part">
+        <form id="game_form">
+            <p nowrap>新增比賽：</p>
+            <input type="text" name="game">
+            <button type="submit" id="game_submit">送出</button><br>
+            <div id="game_ajax_output"></div><br>
+        </form>
+    </div><br>
+
+    <p nowrap>比賽：</p>
+    <select name="game">
+        <option>請選擇比賽</option>
+    </select><br><br>
+
+    <label>局數：</label>
+    <label><input type="radio" name="round" value="1">1</label>
+    <label><input type="radio" name="round" value="2">2</label>
+    <label><input type="radio" name="round" value="3">3</label>
+    <label><input type="radio" name="round" value="4">4</label>
+    <label><input type="radio" name="round" value="5">5</label><br><br>
+    <p nowrap>選手號碼：</p>
+    <input type="text" name="number"><br><br><br>
+
+    <button type="submit" class="open serve_part">發球紀錄</button>&emsp;
+    <button type="submit" class="close serve_part">關閉紀錄</button><br><br>
+
+    <div id="serve_part" style="display:none">
+        <form id="serve_form">
+            <label>發球：</label>
+            <label><input type="radio" name="serve" value="1">站飄</label>
+            <label><input type="radio" name="serve" value="2">跳飄</label>
+            <label><input type="radio" name="serve" value="3">站扣</label>
+            <label><input type="radio" name="serve" value="4">跳扣</label>
+            <label><input type="radio" name="serve" value="5">失誤</label>
+            <label><input type="radio" name="serve" value="0">其他：</label>
+            <input type="text" name="serve_other">&emsp;
+            <button type="submit" class="form_submit" id="serve_submit">送出</button><br>
+            <div id="serve_ajax_output"></div><br>
+        </form>
+
+        <form id="serve_region_form">
+            <label>發球落點：</label><br><br>
+            <div class="region">
+                <div class="net">球網</div>
+                <table>
+                    <tr>
+                        <td class="region1">1</td>
+                        <td class="region2">2</td>
+                        <td class="region3">3</td>
+                    </tr>
+                    <tr>
+                        <td class="region4">4</td>
+                        <td class="region5">5</td>
+                        <td class="region6">6</td>
+                    </tr>
+                    <tr>
+                        <td class="region7">7</td>
+                        <td class="region8">8</td>
+                        <td class="region9">9</td>
+                    </tr>
+                </table>
+                <button type="submit" class="form_submit" id="serve_region_submit">送出</button>
+            </div>
+            <div id="serve_region_ajax_output"></div><br>
+        </form>
+    </div><br>
+
+    <button type="submit" class="open attack_part">攻擊紀錄</button>&emsp;
+    <button type="submit" class="close attack_part">關閉紀錄</button><br><br>
+
+    <div id="attack_part" style="display:none">
+        <form id="attack_form">
+            <label>攻擊：</label>
+            <label><input type="radio" name="attack" value="1">重扣</label>
+            <label><input type="radio" name="attack" value="2">吊球</label>
+            <label><input type="radio" name="attack" value="3">打手出界</label>
+            <label><input type="radio" name="attack" value="4">失誤</label>
+            <label><input type="radio" name="attack" value="0">其他：</label>
+            <input type="text" name="attack_other">&emsp;
+            <button type="submit" class="form_submit" id="attack_submit">送出</button><br>
+            <div id="attack_ajax_output"></div><br>
+        </form>
+
+        <form id="attack_q_form">
+            <label>快攻(Q)：</label><br><br>
+            <div class="position">
+                <table>
+                    <tr>
+                        <td class="position5">5</td>
+                        <td class="position3">3</td>
+                        <td class="position1">1</td>
+                        <td class="position0">S</td>
+                        <td class="position2">2</td>
+                        <td class="position4">4</td>
+                        <td class="position6">6</td>
+                    </tr>
+                </table>
+                <button type="submit" class="form_submit" id="attack_q_submit">送出</button>
+            </div>
+            <div id="attack_q_ajax_output"></div><br><br>
+        </form>
+
+        <form id="attack_l_form">
+            <label>長攻(L)：</label><br><br>
+            <div class="position">
+                <table>
+                    <tr>
+                        <td class="position5">5</td>
+                        <td class="position3">3</td>
+                        <td class="position1">1</td>
+                        <td class="position0">S</td>
+                        <td class="position2">2</td>
+                        <td class="position4">4</td>
+                        <td class="position6">6</td>
+                    </tr>
+                </table>
+                <button type="submit" class="form_submit" id="attack_l_submit">送出</button>
+            </div>
+            <div id="attack_l_ajax_output"></div><br><br>
+        </form>
+
+        <form id="attack_r_form">
+            <label>後排(R)：</label><br><br>
+            <div class="position">
+                <table>
+                    <tr>
+                        <td class="position5">5</td>
+                        <td class="position3">3</td>
+                        <td class="position1">1</td>
+                        <td class="position0">S</td>
+                        <td class="position2">2</td>
+                        <td class="position4">4</td>
+                        <td class="position6">6</td>
+                    </tr>
+                </table>
+                <button type="submit" class="form_submit" id="attack_r_submit">送出</button>
+            </div>
+            <div id="attack_r_ajax_output"></div><br><br>
+        </form>
+
+        <form id="attack_region_form">
+            <label>攻擊落點：</label><br><br>
+            <div class="region">
+                <div class="net">球網</div>
+                <table>
+                    <tr>
+                        <td class="region1">1</td>
+                        <td class="region2">2</td>
+                        <td class="region3">3</td>
+                    </tr>
+                    <tr>
+                        <td class="region4">4</td>
+                        <td class="region5">5</td>
+                        <td class="region6">6</td>
+                    </tr>
+                    <tr>
+                        <td class="region7">7</td>
+                        <td class="region8">8</td>
+                        <td class="region9">9</td>
+                    </tr>
+                </table>
+                <button type="submit" class="form_submit" id="attack_region_submit">送出</button>
+            </div>
+            <div id="attack_region_ajax_output"></div><br>
+        </form>
+    </div><br>
+
+    <button type="submit" class="open defend_part">防守紀錄</button>&emsp;
+    <button type="submit" class="close defend_part">關閉紀錄</button><br><br>
+
+    <div id="defend_part" style="display:none">
+        <form id="defend_form">
+            <label>防守：</label>
+            <label><input type="radio" name="defend" value="1">非常好</label>
+            <label><input type="radio" name="defend" value="2">好</label>
+            <label><input type="radio" name="defend" value="3">普通</label>
+            <label><input type="radio" name="defend" value="4">不好</label>
+            <label><input type="radio" name="defend" value="5">非常不好</label>
+            <label><input type="radio" name="defend" value="0">其他：</label>
+            <input type="text" name="defend_other">&emsp;
+            <button type="submit" class="form_submit" id="defend_submit">送出</button><br>
+            <div id="defend_ajax_output"></div><br>
+        </form>
+    </div><br>
+
+    <button type="submit" class="open block_part">攔網紀錄</button>&emsp;
+    <button type="submit" class="close block_part">關閉紀錄</button><br><br>
+
+    <div id="block_part" style="display:none">
+        <form id="block_form">
+            <label>攔網：</label>
+            <label><input type="radio" name="block" value="1">成功</label>
+            <label><input type="radio" name="block" value="2">失敗</label>
+            <label><input type="radio" name="block" value="0">其他：</label>
+            <input type="text" name="block_other">&emsp;
+            <button type="submit" class="form_submit" id="block_submit">送出</button><br>
+            <div id="block_ajax_output"></div><br>
+        </form>
+    </div><br>
+
+    <button type="submit" class="open set_part">舉球紀錄</button>&emsp;
+    <button type="submit" class="close set_part">關閉紀錄</button><br><br>
+
+    <div id="set_part" style="display:none">
+        <form id="set_form">
+            <label>舉球：</label>
+            <label><input type="radio" name="set" value="1">主攻</label>
+            <label><input type="radio" name="set" value="2">快攻</label>
+            <label><input type="radio" name="set" value="3">舉對</label>
+            <label><input type="radio" name="set" value="4">後排</label>
+            <label><input type="radio" name="set" value="5">修正</label>
+            <label><input type="radio" name="set" value="6">吊球</label>
+            <label><input type="radio" name="set" value="7">二攻</label>
+            <label><input type="radio" name="set" value="0">其他：</label>
+            <input type="text" name="set_other">&emsp;
+            <button type="submit" class="form_submit" id="set_submit">送出</button><br>
+            <div id="set_ajax_output"></div><br>
+        </form>
+
+        <form id="set_quality_form">
+            <label>球質：</label>
+            <label><input type="radio" name="set_quality" value="1">非常好</label>
+            <label><input type="radio" name="set_quality" value="2">好</label>
+            <label><input type="radio" name="set_quality" value="3">普通</label>
+            <label><input type="radio" name="set_quality" value="4">不好</label>
+            <label><input type="radio" name="set_quality" value="5">非常不好</label>
+            <label><input type="radio" name="set_quality" value="0">其他：</label>
+            <input type="text" name="set_quality_other">&emsp;
+            <button type="submit" class="form_submit" id="set_quality_submit">送出</button><br>
+            <div id="set_quality_ajax_output"></div><br>
+        </form>
+    </div><br><br>
+
+    <div>=================================== 分隔線 ===================================</div><br>
+    <button type="submit" class="open ajax_output2">查看紀錄</button>&emsp;
+    <button type="submit" class="close ajax_output2">關閉紀錄</button>
+
+    <div id="ajax_output2" style="display:none">
+        <br><label>局數：</label>
+        <label><input type="radio" name="ajax_round" value="1">1</label>
+        <label><input type="radio" name="ajax_round" value="2">2</label>
+        <label><input type="radio" name="ajax_round" value="3">3</label>
+        <label><input type="radio" name="ajax_round" value="4">4</label>
+        <label><input type="radio" name="ajax_round" value="5">5</label><br><br>
+        <p nowrap>選手：</p>
+        <select name="number">
+            <option>請先選擇局數</option>
+        </select>&emsp;
+        <p nowrap>類別：</p>
+        <select name="kind">
+            <option>請先選擇局數和選手</option>
+        </select><br><br>
+        <div id="ajax_output3"></div><br>
+        <div class="chart">
+            <canvas id="myChart"></canvas>
+        </div>
+    </div><br><br>
+
+    <!-- <button type="submit" id="logout">Logout</button><br><br> -->
+
+    <script src="./main.js"></script>
+</body>
+
+</html>
